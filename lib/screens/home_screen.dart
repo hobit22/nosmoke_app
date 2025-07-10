@@ -11,6 +11,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   DateTime? quitDate;
+  int? cigarCount;
 
   @override
   void initState() {
@@ -21,8 +22,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadQuitDate() async {
     final storage = StorageService();
     final savedDate = await storage.loadQuitDate();
+    final savedCigarCount = await storage.loadCigarCount();
     setState(() {
       quitDate = savedDate;
+      cigarCount = savedCigarCount;
     });
   }
 
@@ -59,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildMainContent() {
     final today = DateTime.now();
     final days = today.difference(quitDate!).inDays;
-    final moneySaved = days * (4500 / 20 * 10);
+    final moneySaved = days * (4500 / 20 * cigarCount!);
 
     return Center(
       child: Column(

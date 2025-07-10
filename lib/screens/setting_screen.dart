@@ -10,18 +10,25 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   DateTime? selectedDate;
+  final TextEditingController cigarCountController = TextEditingController();
+
   final storage = StorageService();
 
   @override
   void initState() {
     super.initState();
-    loadDate();
+    loadSettings();
   }
 
-  Future<void> loadDate() async {
+  Future<void> loadSettings() async {
     final savedDate = await storage.loadQuitDate();
+    final savedCigarCount = await storage.loadCigarCount();
+
     setState(() {
       selectedDate = savedDate;
+      if (savedCigarCount != null) {
+        cigarCountController.text = savedCigarCount.toString();
+      }
     });
   }
 
@@ -34,10 +41,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
       lastDate: now,
     );
     if (picked != null) {
-      await storage.saveQuitDate(picked);
       setState(() {
         selectedDate = picked;
       });
+    }
+  }
+
+  Future<void> saveSettings() async {
+    if (selectedDate != null) {
+      await storage.saveQuitDate(selectedDate!);
+    }
+
+    final parsedCigarCount = int.tryParse(cigarCountController.text);
+    if (parsedCigarCount != null) {
+      await storage.saveCigarCount(parsedCigarCount);
+    }
+
+    if (mounted) {
+      Navigator.pop(context); // 돌아가기
     }
   }
 
@@ -45,18 +66,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('설정')),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(24),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              selectedDate == null
-                  ? '금연 시작일을 선택해주세요'
-                  : '금연 시작일: ${selectedDate!.toLocal().toString().split(' ')[0]}',
-              style: const TextStyle(fontSize: 18),
+            const Text('금연 시작일', style: TextStyle(fontSize: 18)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    selectedDate == null
+                        ? '날짜를 선택해주세요'
+                        : '${selectedDate!.toLocal()}'.split(' ')[0],
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
+                TextButton(onPressed: pickDate, child: const Text('날짜 선택')),
+              ],
             ),
-            const SizedBox(height: 20),
-            ElevatedButton(onPressed: pickDate, child: const Text('시작일 선택')),
+            const SizedBox(height: 24),
+            const Text('하루 흡연 개수', style: TextStyle(fontSize: 18)),
+            const SizedBox(height: 8),
+            TextField(
+              controller: cigarCountController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: '예: 10',
+              ),
+            ),
+            const SizedBox(height: 32),
+            Center(
+              child: ElevatedButton(
+                onPressed: saveSettings,
+                child: const Text('저장하기'),
+              ),
+            ),
           ],
         ),
       ),
