@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/storage_service.dart';
+import '../widgets/date_picker_field.dart';
+import '../widgets/labeled_number_field.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -11,7 +13,6 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   DateTime? selectedDate;
   final TextEditingController cigarCountController = TextEditingController();
-
   final storage = StorageService();
 
   @override
@@ -70,34 +71,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: 50,
           children: [
-            const Text('금연 시작일', style: TextStyle(fontSize: 18)),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    selectedDate == null
-                        ? '날짜를 선택해주세요'
-                        : '${selectedDate!.toLocal()}'.split(' ')[0],
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ),
-                TextButton(onPressed: pickDate, child: const Text('날짜 선택')),
-              ],
+            DatePickerField(
+              label: '금연 시작일',
+              date: selectedDate,
+              onPick: pickDate,
             ),
-            const SizedBox(height: 24),
-            const Text('하루 흡연 개수', style: TextStyle(fontSize: 18)),
-            const SizedBox(height: 8),
-            TextField(
+            LabeledNumberField(
+              label: '하루에 몇 개비 피우나요?',
               controller: cigarCountController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: '예: 10',
-              ),
+              hintText: '예: 10',
             ),
-            const SizedBox(height: 32),
             Center(
               child: ElevatedButton(
                 onPressed: saveSettings,
