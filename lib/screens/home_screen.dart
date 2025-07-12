@@ -10,31 +10,29 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  DateTime? quitDate;
-  int? cigarCount;
+  late DateTime quitDate = DateTime.now();
+  late int cigarCount = 0;
+  bool isLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    _loadQuitDate();
+    _loadData();
   }
 
-  Future<void> _loadQuitDate() async {
+  Future<void> _loadData() async {
     final storage = StorageService();
-    final savedDate = await storage.loadQuitDate();
-    final savedCigarCount = await storage.loadCigarCount();
+    quitDate = await storage.loadQuitDate() ?? DateTime.now();
+    cigarCount = await storage.loadCigarCount() ?? 0;
+
     setState(() {
-      quitDate = savedDate;
-      cigarCount = savedCigarCount;
+      isLoaded = true;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(),
-      body: quitDate == null ? _buildEmptyContent() : _buildMainContent(),
-    );
+    return Scaffold(appBar: _buildAppBar(), body: _buildMainContent());
   }
 
   AppBar _buildAppBar() {
@@ -48,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const SettingsScreen()),
-            ).then((_) => _loadQuitDate());
+            ).then((_) => _loadData());
           },
         ),
       ],
@@ -60,18 +58,20 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMainContent() {
+    if (!isLoaded) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     final today = DateTime.now();
-    final days = today.difference(quitDate!).inDays;
-    final moneySaved = days * (4500 / 20 * cigarCount!);
+    final days = today.difference(quitDate).inDays;
+
+    final moneySaved = days * (4500 / 20 * cigarCount);
 
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            '금연한지 $days일째!',
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-          ),
+          Text('금연한지 $days일째!', style: const TextStyle(fontSize: 28)),
           const SizedBox(height: 20),
           Text(
             '절약한 금액: ${moneySaved.toStringAsFixed(0)}원',

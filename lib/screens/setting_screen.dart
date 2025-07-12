@@ -71,18 +71,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 50,
           children: [
             DatePickerField(
               label: '금연 시작일',
               date: selectedDate,
               onPick: pickDate,
             ),
+            const SizedBox(height: 50),
             LabeledNumberField(
               label: '하루에 몇 개비 피우나요?',
               controller: cigarCountController,
               hintText: '예: 10',
             ),
+            const SizedBox(height: 50),
             Center(
               child: ElevatedButton(
                 onPressed: saveSettings,
